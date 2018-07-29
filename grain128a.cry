@@ -64,3 +64,97 @@ encrypt_decrypt key iv tag input =  if iv@0
 
 encrypt_decrypt_tag : {m,t} (fin m, m >= 0, t >= 1, t <= 32) => [128] -> [96] -> [t] -> [m] -> ([m], [t])
 encrypt_decrypt_tag key iv tag input = (encrypt_decrypt key iv tag input, authentication_tag key iv tag input)
+
+t_m0 = []
+t_m1 = [False]
+t_m2 = [True]
+t_m3 = 0x12340
+t_m4 = 0b00010010001101000101011001111000100111101
+
+property test_vector1 =
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m0) == t_m0 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m1) == t_m1 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m2) == t_m2 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m3) == t_m3 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m4) == t_m4 /\
+    take`{320} (pre_output_stream t_key t_iv) == t_pre_output_stream
+        where
+            t_key = (0x00000000000000000000000000000000)
+            t_iv = (0:[96])
+            t_tag = 0x00000000
+            t_pre_output_stream = 0xc0207f221660650b6a952ae26586136fa0904140c8621cfe8660c0dec0969e9436f4ace92cf1ebb7
+
+property test_vector2 =
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m0) == t_m0 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m1) == t_m1 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m2) == t_m2 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m3) == t_m3 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m4) == t_m4 /\
+    take`{320} (pre_output_stream t_key t_iv) == t_pre_output_stream
+        where
+            t_key = 0x0123456789abcdef123456789abcdef0
+            t_iv = 0x0123456789abcdef12345678
+            t_tag = 0x00000000
+            t_pre_output_stream = 0xf88720c13f46e6a43c07eeed89161a4dd73bd6b8be8b6b116879714ebb630e0a4c12f0399412982c
+            
+property test_vector3 =
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m0) == t_m0 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m1) == t_m1 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m2) == t_m2 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m3) == t_m3 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m4) == t_m4 /\
+    take`{320} (pre_output_stream t_key t_iv) == t_pre_output_stream /\
+    (r_a_initialize t_key t_iv t_tag).1 == t_accumulator /\
+    (r_a_initialize t_key t_iv t_tag).0 == t_register /\
+    take`{128} (key_stream t_key t_iv t_tag) == t_key_stream /\
+    take`{128} (mac_stream t_key t_iv t_tag) == t_mac_stream /\
+    authentication_tag t_key t_iv t_tag t_m0 == t_tag_m0 /\
+    authentication_tag t_key t_iv t_tag t_m1 == t_tag_m1 /\
+    authentication_tag t_key t_iv t_tag t_m2 == t_tag_m2 /\
+    authentication_tag t_key t_iv t_tag t_m3 == t_tag_m3 /\
+    authentication_tag t_key t_iv t_tag t_m4 == t_tag_m4
+        where
+            t_key = 0x00000000000000000000000000000000
+            t_iv = 0x800000000000000000000000
+            t_tag = 0x00000000
+            t_pre_output_stream = 0x564b362219bd90e301f259cf52bf5da9deb1845be6993abd2d3c77c4acb90e422640fbd6e8ae642a
+            t_accumulator = 0x564b3622
+            t_register = 0x19bd90e3
+            t_key_stream = 0x0d2b1f2ebc83da7e6658ee3150f9ef47
+            t_mac_stream = 0x1cdbc7f1e52da54736fa252828de82a0
+            t_tag_m0 = 0x4ff6a6c1
+            t_tag_m1 = 0x653017e4
+            t_tag_m2 = 0x7c8d8707
+            t_tag_m3 = 0x522ab34f
+            t_tag_m4 = 0x4b7821c9
+
+property test_vector4 =
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m0) == t_m0 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m1) == t_m1 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m2) == t_m2 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m3) == t_m3 /\
+    encrypt_decrypt t_key t_iv t_tag (encrypt_decrypt t_key t_iv t_tag t_m4) == t_m4 /\
+    take`{320} (pre_output_stream t_key t_iv) == t_pre_output_stream /\
+    (r_a_initialize t_key t_iv t_tag).1 == t_accumulator /\
+    (r_a_initialize t_key t_iv t_tag).0 == t_register /\
+    take`{128} (key_stream t_key t_iv t_tag) == t_key_stream /\
+    take`{128} (mac_stream t_key t_iv t_tag) == t_mac_stream /\
+    authentication_tag t_key t_iv t_tag t_m0 == t_tag_m0 /\
+    authentication_tag t_key t_iv t_tag t_m1 == t_tag_m1 /\
+    authentication_tag t_key t_iv t_tag t_m2 == t_tag_m2 /\
+    authentication_tag t_key t_iv t_tag t_m3 == t_tag_m3 /\
+    authentication_tag t_key t_iv t_tag t_m4 == t_tag_m4
+        where
+            t_key = 0x0123456789abcdef123456789abcdef0
+            t_iv = 0x8123456789abcdef12345678
+            t_tag = 0x00000000
+            t_pre_output_stream = 0x7f2acdb7adfb701f8d2083b3c32b43f1962b3dcabf679378db3536bfc25bed483008e6bcb395a156
+            t_accumulator = 0x7f2acdb7
+            t_register = 0xadfb701f
+            t_key_stream = 0xa49d971c976bf596b45f93e242ded8c1
+            t_mac_stream = 0x3015919d61787b5cd7678db840a6571e
+            t_tag_m0 = 0xd2d1bda8
+            t_tag_m1 = 0x24dc2d89
+            t_tag_m2 = 0x89275d96
+            t_tag_m3 = 0x379d2899
+            t_tag_m4 = 0x9226b196
