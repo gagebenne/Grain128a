@@ -1,0 +1,4 @@
+module grain128a where
+
+s_initialize : [96] -> [128]
+s_initialize iv = iv # (~0:[31]) # (0:[1])
