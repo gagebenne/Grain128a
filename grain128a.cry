@@ -21,3 +21,14 @@ start_up_clocking key iv = b_s_states@256
         b_next_state b s = (tail b) # ([b_next b s] ^ [y_next b s])
         s_next_state b s = (tail s) # ([s_next s] ^ [y_next b s])
         b_s_states = [(key, s_initialize iv)] # [(b_next_state b_s.0 b_s.1,s_next_state b_s.0 b_s.1) | b_s <- b_s_states]
+        
+pre_output_stream : [128] -> [96] -> [inf]
+pre_output_stream key iv = y
+    where
+        b_next_state b s = (tail b) # ([b_next b s])
+        s_next_state b s = (tail s) # ([s_next s])
+        b_s_states = [start_up_clocking key iv] # [(b_next_state b_s.0 b_s.1,s_next_state b_s.0 b_s.1) | b_s <- b_s_states]
+        y = [y_next b_s.0 b_s.1 | b_s <- b_s_states]
+
+encrypt_decrypt_authentication_disabled : {m} (fin m, m >= 0) => [128] -> [96] -> [m] -> [m]
+encrypt_decrypt_authentication_disabled key iv input = [m ^ z | m <- input | z <- pre_output_stream key iv]
