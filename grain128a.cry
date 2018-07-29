@@ -14,3 +14,10 @@ h b s = (b@12 /\ s@8) ^ (s@13 /\ s@20) ^ (b@95 /\ s@42) ^ (s@60 /\ s@79) ^ (b@12
 
 y_next : [128] -> [128] -> Bit
 y_next b s = (h b s) ^ s@93 ^ b@2 ^ b@15 ^ b@36 ^ b@45 ^ b@64 ^ b@73 ^ b@89
+
+start_up_clocking : [128] -> [96] -> ([128], [128])
+start_up_clocking key iv = b_s_states@256
+    where
+        b_next_state b s = (tail b) # ([b_next b s] ^ [y_next b s])
+        s_next_state b s = (tail s) # ([s_next s] ^ [y_next b s])
+        b_s_states = [(key, s_initialize iv)] # [(b_next_state b_s.0 b_s.1,s_next_state b_s.0 b_s.1) | b_s <- b_s_states]
