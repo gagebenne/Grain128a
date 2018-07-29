@@ -56,3 +56,11 @@ authentication_tag key iv tag input = last a_states
         a_next_state r a m = [a_i ^ (m /\ r_i) | a_i <- a | r_i <- r]
         a_states : [m+2][t]
         a_states = [(r_a_initialize key iv tag).1] # [a_next_state r a m | m <- (input # [True]) | r <- r_states | a <- a_states]
+        
+encrypt_decrypt : {m,t} (fin m, m >= 0, t >= 1, t <= 32) => [128] -> [96] -> [t] -> [m] -> [m]
+encrypt_decrypt key iv tag input =  if iv@0
+                                    then encrypt_decrypt_authentication_enabled key iv tag input
+                                    else encrypt_decrypt_authentication_disabled key iv input    
+
+encrypt_decrypt_tag : {m,t} (fin m, m >= 0, t >= 1, t <= 32) => [128] -> [96] -> [t] -> [m] -> ([m], [t])
+encrypt_decrypt_tag key iv tag input = (encrypt_decrypt key iv tag input, authentication_tag key iv tag input)
