@@ -41,3 +41,18 @@ mac_stream key iv tag = (drop`{2*t}(pre_output_stream key iv))@@[1:[32],3...]
 
 encrypt_decrypt_authentication_enabled : {m,t} (fin m, m >= 0, t >= 1, t <= 32) => [128] -> [96] -> [t] -> [m] -> [m]
 encrypt_decrypt_authentication_enabled key iv tag input = [m ^ z | m <- input | z <- key_stream key iv tag]
+
+r_a_initialize : {t} (t >= 1, t <= 32) => [128] -> [96] -> [t] -> ([t], [t])
+r_a_initialize key iv tag = (r_initialize, a_initialize)
+    where
+        a_initialize = take`{t} (pre_output_stream key iv)
+        r_initialize = take`{t} (drop`{t} (pre_output_stream key iv))
+
+authentication_tag : {m,t} (fin m, m >= 0, t >= 1, t <= 32) => [128] -> [96] -> [t] -> [m] -> [t]
+authentication_tag key iv tag input = last a_states
+    where
+        r_next_state r y = (tail r) # [y]
+        r_states = [(r_a_initialize key iv tag).0] # [r_next_state r y | r <- r_states | y <- mac_stream key iv tag]
+        a_next_state r a m = [a_i ^ (m /\ r_i) | a_i <- a | r_i <- r]
+        a_states : [m+2][t]
+        a_states = [(r_a_initialize key iv tag).1] # [a_next_state r a m | m <- (input # [True]) | r <- r_states | a <- a_states]
