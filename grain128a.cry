@@ -38,3 +38,6 @@ key_stream key iv tag = (drop`{2*t}(pre_output_stream key iv))@@[0:[32],2...]
 
 mac_stream : {t} (t >= 1, t <= 32) => [128] -> [96] -> [t] -> [inf]
 mac_stream key iv tag = (drop`{2*t}(pre_output_stream key iv))@@[1:[32],3...]
+
+encrypt_decrypt_authentication_enabled : {m,t} (fin m, m >= 0, t >= 1, t <= 32) => [128] -> [96] -> [t] -> [m] -> [m]
+encrypt_decrypt_authentication_enabled key iv tag input = [m ^ z | m <- input | z <- key_stream key iv tag]
